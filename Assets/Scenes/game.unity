@@ -1292,12 +1292,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 294f215f6a448ab4d8564c41fa2e0502, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugMove: {x: 0, y: 0, z: 0}
+  debugMove: {x: 1, y: 0, z: 0}
   triggerInteraction: 0
   fixedTimeStep: 1
   fixedUpdatesPerSecond: 60
   clampToMovingGround: 0
-  debugSpheres: 1
+  debugSpheres: 0
   debugGrounding: 0
   debugPushbackMesssages: 0
   spheres:

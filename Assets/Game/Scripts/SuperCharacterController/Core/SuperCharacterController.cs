@@ -17,13 +17,14 @@ public class SuperCharacterController : MonoBehaviour
     [SerializeField]
     QueryTriggerInteraction triggerInteraction;
     //似乎要去驱动状态机，也是说这个状态机是耦合的
-    [SerializeField]
-    bool fixedTimeStep;
 
     [SerializeField]
-    int fixedUpdatesPerSecond;
+    bool fixedTimeStep;//固定驱动次数
 
     [SerializeField]
+    int fixedUpdatesPerSecond;//固定驱动频率
+
+    [SerializeField]//钳住移动的物体，如果物体掉落在物体上的情况
     bool clampToMovingGround;
     //我不明白下面三个选项
     [SerializeField]
@@ -61,7 +62,7 @@ public class SuperCharacterController : MonoBehaviour
             this.transform = hitTransform;
         }
     }
-
+    //体内三个碰撞体实体
     [SerializeField]
     CollisionSphere[] spheres =
         new CollisionSphere[3] {
@@ -69,16 +70,16 @@ public class SuperCharacterController : MonoBehaviour
             new CollisionSphere(1.0f, false, false),
             new CollisionSphere(1.5f, false, true),
         };
-
+    //能走的部分
     public LayerMask Walkable;
-
+    //真正的实体，比如说趴下，或者蹲下，我都要改变超级角色控制器的实体
     [SerializeField]
     Collider ownCollider;
-
+    //实体的半径，三个实体组成的大小进行搞一搞
     [SerializeField]
     public float radius = 0.5f;
 
-    public float deltaTime { get; private set; }
+    public float deltaTime { get; private set; }//每次更新的时间间隔
     public SuperGround currentGround { get; private set; }
     public CollisionSphere feet { get; private set; }
     public CollisionSphere head { get; private set; }
@@ -86,10 +87,12 @@ public class SuperCharacterController : MonoBehaviour
     /// <summary>
     /// Total height of the controller from the bottom of the feet to the top of the head
     /// </summary>
+    /// 控制器从底部到顶部的总高度
     public float height { get { return Vector3.Distance(SpherePosition(head), SpherePosition(feet)) + radius * 2; } }
 
     public Vector3 up { get { return transform.up; } }
     public Vector3 down { get { return -transform.up; } }
+
     public List<SuperCollision> collisionData { get; private set; }
     public Transform currentlyClampedTo { get; set; }
     public float heightScale { get; set; }
@@ -108,10 +111,10 @@ public class SuperCharacterController : MonoBehaviour
     private List<Collider> ignoredColliders;
     private List<IgnoredCollider> ignoredColliderStack;
 
-    private const float Tolerance = 0.05f;
-    private const float TinyTolerance = 0.01f;
+    private const float Tolerance = 0.05f;//公差
+    private const float TinyTolerance = 0.01f;//维差
     private const string TemporaryLayer = "TempCast";
-    private const int MaxPushbackIterations = 2;
+    private const int MaxPushbackIterations = 2;//最大的阻尼
     private int TemporaryLayerIndex;
     private float fixedDeltaTime;
 
@@ -155,7 +158,8 @@ public class SuperCharacterController : MonoBehaviour
 
         currentGround = new SuperGround(Walkable, this, triggerInteraction);
 
-        manualUpdateOnly = false;
+        manualUpdateOnly = false;//同步的话需要看这个，如果是真实的同步又应该是什么样子呢
+
 
         gameObject.SendMessage("SuperStart", SendMessageOptions.DontRequireReceiver);
     }
@@ -164,18 +168,21 @@ public class SuperCharacterController : MonoBehaviour
     {
         // If we are using a fixed timestep, ensure we run the main update loop
         // a sufficient number of times based on the Time.deltaTime
+        //判断是不是手动执行
         if (manualUpdateOnly)
             return;
 
         if (!fixedTimeStep)
         {
+            //如果不是间隔执行
             deltaTime = Time.deltaTime;
-
+            //执行单步
             SingleUpdate();
             return;
         }
         else
         {
+            //如果是按照固定间隔执行
             float delta = Time.deltaTime;
 
             while (delta > fixedDeltaTime)
@@ -190,38 +197,45 @@ public class SuperCharacterController : MonoBehaviour
             if (delta > 0f)
             {
                 deltaTime = delta;
-
+                //可能会有积累
                 SingleUpdate();
             }
         }
     }
-
+    //手动执行
     public void ManualUpdate(float deltaTime)
     {
         this.deltaTime = deltaTime;
 
         SingleUpdate();
     }
-
+    //每次update执行的单步
     void SingleUpdate()
     {
         // Check if we are clamped to an object implicity or explicity
+        //如果钳住地面或者当前有钳住的对象
         bool isClamping = clamping || currentlyClampedTo != null;
-        Transform clampedTo = currentlyClampedTo != null ? currentlyClampedTo : currentGround.transform;
 
+        //如果有当前钳住的对象获得他的transform
+        Transform clampedTo = currentlyClampedTo != null ? currentlyClampedTo : currentGround.transform;
+        //1可以钳住移动物体
+        //正在钳住对象
+        //钳住到某个位置
+        //2个地面的物体的距离不等于0
+        //当前的位置加上距离
         if (clampToMovingGround && isClamping && clampedTo != null && clampedTo.position - lastGroundPosition != Vector3.zero)
             transform.position += clampedTo.position - lastGroundPosition;
-
+        //初始位置
         initialPosition = transform.position;
-
+        //检查地面 1
         ProbeGround(1);
-
+        //调试移动
         transform.position += debugMove * deltaTime;
-
+        //对子节点的对象发消息SuperUpdate
         gameObject.SendMessage("SuperUpdate", SendMessageOptions.DontRequireReceiver);
-
+        //清空 
         collisionData.Clear();
-
+        //递归的阻力
         RecursivePushback(0, MaxPushbackIterations);
 
         ProbeGround(2);
@@ -246,7 +260,7 @@ public class SuperCharacterController : MonoBehaviour
         if (AfterSingleUpdate != null)
             AfterSingleUpdate();
     }
-
+    //检查
     void ProbeGround(int iter)
     {
         PushIgnoredColliders();
@@ -335,12 +349,14 @@ public class SuperCharacterController : MonoBehaviour
     /// </summary>
     void RecursivePushback(int depth, int maxDepth)
     {
+        //加添忽略的对象
         PushIgnoredColliders();
-
+        //接触标志
         bool contact = false;
 
         foreach (var sphere in spheres)
         {
+            //用三个物体来进行检查
             foreach (Collider col in Physics.OverlapSphere((SpherePosition(sphere)), radius, Walkable, triggerInteraction))
             {
                 Vector3 position = SpherePosition(sphere);
@@ -438,7 +454,7 @@ public class SuperCharacterController : MonoBehaviour
             this.layer = layer;
         }
     }
-
+    //把忽略的对象加入进去
     private void PushIgnoredColliders()
     {
         ignoredColliderStack.Clear();

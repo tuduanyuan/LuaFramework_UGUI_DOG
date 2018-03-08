@@ -40,8 +40,7 @@ public class SuperCharacterController : MonoBehaviour
     /// Describes the Transform of the object we are standing on as well as it's CollisionType, as well
     /// as how far the ground is below us and what angle it is in relation to the controller.
     /// </summary>
-    /// 对地面的描述？
-
+    /// 对地面的描述
     [SerializeField]
     public struct Ground
     {
@@ -237,14 +236,14 @@ public class SuperCharacterController : MonoBehaviour
         collisionData.Clear();
         //递归的阻力
         RecursivePushback(0, MaxPushbackIterations);
-
+        //检查地面
         ProbeGround(2);
-
+        //如果开启了斜率生效
         if (slopeLimiting)
             SlopeLimit();
-
+        //检查地面3
         ProbeGround(3);
-
+        //钳住地面？到底什么是钳住地面？
         if (clamping)
             ClampToGround();
 
@@ -256,9 +255,9 @@ public class SuperCharacterController : MonoBehaviour
 
         if (debugGrounding)
             currentGround.DebugGround(true, true, true, true, true);
-
+        // 经过一个阶段
         if (AfterSingleUpdate != null)
-            AfterSingleUpdate();
+            AfterSingleUpdate();//这里面update的东西就多了
     }
     //检查
     void ProbeGround(int iter)
@@ -496,7 +495,7 @@ public class SuperCharacterController : MonoBehaviour
             }
         }
     }
-
+    //为什么只检查了脚，加上偏移量
     public Vector3 SpherePosition(CollisionSphere sphere)
     {
         if (sphere.isFeet)
@@ -529,7 +528,7 @@ public class SuperCharacterController : MonoBehaviour
     {
         ignoredColliders.Clear();
     }
-
+    //地形的描述
     public class SuperGround
     {
         public SuperGround(LayerMask walkable, SuperCharacterController controller, QueryTriggerInteraction triggerInteraction)
@@ -556,12 +555,12 @@ public class SuperCharacterController : MonoBehaviour
         private LayerMask walkable;
         private SuperCharacterController controller;
         private QueryTriggerInteraction triggerInteraction;
-
-        private GroundHit primaryGround;
-        private GroundHit nearGround;
-        private GroundHit farGround;
-        private GroundHit stepGround;
-        private GroundHit flushGround;
+        
+        private GroundHit primaryGround;//主要的地面
+        private GroundHit nearGround;//近的地面
+        private GroundHit farGround;//远的地面
+        private GroundHit stepGround;//踩的地面
+        private GroundHit flushGround;//？？？
 
         public SuperCollisionType superCollisionType { get; private set; }
         public Transform transform { get; private set; }
@@ -573,6 +572,7 @@ public class SuperCharacterController : MonoBehaviour
         /// <summary>
         /// Scan the surface below us for ground. Follow up the initial scan with subsequent scans
         /// designed to test what kind of surface we are standing above and handle different edge cases
+        /// 扫描地面下方的表面。 通过随后的扫描进行初始扫描，以便测试我们站在上面的哪种表面，并处理不同的边缘情况
         /// </summary>
         /// <param name="origin">Center of the sphere for the initial SphereCast</param>
         /// <param name="iter">Debug tool to print out which ProbeGround iteration is being run (3 are run each frame for the controller)</param>
@@ -582,14 +582,15 @@ public class SuperCharacterController : MonoBehaviour
 
             Vector3 up = controller.up;
             Vector3 down = -up;
-
+            //略微向上偏移
             Vector3 o = origin + (up * Tolerance);
 
             // Reduce our radius by Tolerance squared to avoid failing the SphereCast due to clipping with walls
+            // 通过公差平方减少我们的半径，避免由于墙壁剪切而导致SphereCast失败
             float smallerRadius = controller.radius - (Tolerance * Tolerance);
 
             RaycastHit hit;
-
+            //圆形匹配 单一
             if (Physics.SphereCast(o, smallerRadius, down, out hit, Mathf.Infinity, walkable, triggerInteraction))
             {
                 var superColType = hit.collider.gameObject.GetComponent<SuperCollisionType>();
@@ -604,22 +605,31 @@ public class SuperCharacterController : MonoBehaviour
 
                 // By reducing the initial SphereCast's radius by Tolerance, our casted sphere no longer fits with
                 // our controller's shape. Reconstruct the sphere cast with the proper radius
-                SimulateSphereCast(hit.normal, out hit);
 
+                //通过容差减少初始SphereCast的半径，我们的铸造球体不再符合我们控制器的形状。 重建以适当半径投射的球体
+                //软件的翻译，我不太明白
+                //Simulate：模仿----》实际上对hit进行了微微的调整，具体为什么我还得看看文档
+                SimulateSphereCast(hit.normal, out hit);
+                //整理地面信息，当前位置的，进行描述
                 primaryGround = new GroundHit(hit.point, hit.normal, hit.distance);
 
                 // If we are standing on a perfectly flat surface, we cannot be either on an edge,
                 // On a slope or stepping off a ledge
                 if (Vector3.Distance(Math3d.ProjectPointOnPlane(controller.up, controller.transform.position, hit.point), controller.transform.position) < TinyTolerance)
                 {
+                    //为什么在投影点和位置很近的时候
+                    //就什么什么的了？
+                    //如果我们站在一个完美平坦的表面上
                     return;
                 }
 
                 // As we are standing on an edge, we need to retrieve the normals of the two
                 // faces on either side of the edge and store them in nearHit and farHit
+                // 当我们站在边缘时，我们需要检索边缘两侧的两个面的法线并将它们存储在nearHit和farHit
 
+                //中心 算的一个平面的投影
                 Vector3 toCenter = Math3d.ProjectVectorOnPlane(up, (controller.transform.position - hit.point).normalized * TinyTolerance);
-
+                //完全不知道什么原理的样子
                 Vector3 awayFromCenter = Quaternion.AngleAxis(-80.0f, Vector3.Cross(toCenter, up)) * -toCenter;
 
                 Vector3 nearPoint = hit.point + toCenter + (up * TinyTolerance);
@@ -870,12 +880,14 @@ public class SuperCharacterController : MonoBehaviour
         /// <returns>True if the raycast is successful</returns>
         private bool SimulateSphereCast(Vector3 groundNormal, out RaycastHit hit)
         {
+            //取夹角
             float groundAngle = Vector3.Angle(groundNormal, controller.up) * Mathf.Deg2Rad;
-
+            //当前的位置
             Vector3 secondaryOrigin = controller.transform.position + controller.up * Tolerance;
 
             if (!Mathf.Approximately(groundAngle, 0))
             {
+                //如果不近似（这个是啥子意思）
                 float horizontal = Mathf.Sin(groundAngle) * controller.radius;
                 float vertical = (1.0f - Mathf.Cos(groundAngle)) * controller.radius;
 
@@ -883,6 +895,8 @@ public class SuperCharacterController : MonoBehaviour
                 Vector3 r2 = Vector3.Cross(groundNormal, controller.down);
                 Vector3 v2 = -Vector3.Cross(r2, groundNormal);
 
+
+                //检索一个指向斜率的矢量
                 secondaryOrigin += Math3d.ProjectVectorOnPlane(controller.up, v2).normalized * horizontal + controller.up * vertical;
             }
             
@@ -890,7 +904,7 @@ public class SuperCharacterController : MonoBehaviour
             {
                 // Remove the tolerance from the distance travelled
                 hit.distance -= Tolerance + TinyTolerance;
-
+                //最后的作用就是改变了一个公差和维差的距离
                 return true;
             }
             else

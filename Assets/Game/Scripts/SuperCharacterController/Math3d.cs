@@ -263,6 +263,7 @@ public class Math3d : MonoBehaviour
     }
 
     //This function returns a point which is a projection from a point to a plane.
+    //这个函数返回一个点，它是一个点到一个平面的投影。
     public static Vector3 ProjectPointOnPlane(Vector3 planeNormal, Vector3 planePoint, Vector3 point)
     {
 
@@ -283,6 +284,7 @@ public class Math3d : MonoBehaviour
     }
 
     //Projects a vector onto a plane. The output is not normalized.
+    //把一个向量投射到一个平面上。输出不是normalized的。
     public static Vector3 ProjectVectorOnPlane(Vector3 planeNormal, Vector3 vector)
     {
 

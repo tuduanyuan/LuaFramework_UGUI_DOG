@@ -1294,12 +1294,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debugMove: {x: 1, y: 0, z: 0}
   triggerInteraction: 0
-  fixedTimeStep: 1
+  fixedTimeStep: 0
   fixedUpdatesPerSecond: 60
-  clampToMovingGround: 0
-  debugSpheres: 0
-  debugGrounding: 0
-  debugPushbackMesssages: 0
+  clampToMovingGround: 1
+  debugSpheres: 1
+  debugGrounding: 1
+  debugPushbackMesssages: 1
   spheres:
   - offset: 0.5
     isFeet: 1

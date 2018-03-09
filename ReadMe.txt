@@ -7,7 +7,15 @@
 2017/8/4
 创建gwushuang40@126.com/CreateLua@@@ 插件
 自动创建mvc的lua的基本文件，详细：Assets\Editor\CreateLua@@@\README.txt
+2018/加入超级角色控制器
+http://jjyy.guru/super-character-controller-part1
 
+
+
+
+
+
+---------------------华丽的分割线----------------------
 
 项目开源免费，求上面点星支持(star ^o^)
 

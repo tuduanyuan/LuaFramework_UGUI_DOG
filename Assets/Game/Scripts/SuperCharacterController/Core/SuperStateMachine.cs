@@ -3,7 +3,15 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+/*
+    SuperStateMachine则是来自Unity Gems Finite State Machine tutorial的修改版本。
+    我的版本则是更加简单，同时也更加强大。
+    简单易用的状态机实现对于大部分游戏来说都很重要。
+    这个状态机是专门与SuperCharacterController一起使用的。
+    角色的状态机逻辑实现在SuperStateMachine子类当中。
+    我通常按照”角色名+Machine”的方式使用。
+    比如我的Mario64项目中，有MarioMachine、GoombaMachine、BobombMachine，它们都继承自SuperStateMachine。
+     */
 /// <summary>
 /// State machine model that recieves SuperUpdate messages from the SuperCharacterController
 /// </summary>

@@ -228,7 +228,7 @@ public class SuperCharacterController : MonoBehaviour
         initialPosition = transform.position;
         //检查地面 1
         ProbeGround(1);
-        //调试移动
+        //调试移动 这句代码是是第一句代码，移动 反推 处理 过程的第一步，假设的话
         transform.position += debugMove * deltaTime;
         //对子节点的对象发消息SuperUpdate
         gameObject.SendMessage("SuperUpdate", SendMessageOptions.DontRequireReceiver);
@@ -268,6 +268,7 @@ public class SuperCharacterController : MonoBehaviour
     }
 
     /// <summary>
+    /// 防止玩家在一个比物体倾斜的角度更大的角度上行走。
     /// Prevents the player from walking up slopes of a larger angle than the object's SlopeLimit.
     /// </summary>
     /// <returns>True if the controller attemped to ascend a too steep slope and had their movement limited</returns>

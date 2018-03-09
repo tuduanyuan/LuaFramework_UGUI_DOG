@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+//全部来找离碰撞体表面最近的一个点
+//寻找最近点
 public static class SuperCollider {
 
     public static bool ClosestPointOnSurface(Collider collider, Vector3 to, float radius, out Vector3 closestPointOnSurface)

@@ -11,11 +11,12 @@ using System.Collections.Generic;
 /// </summary>
 public class SuperCharacterController : MonoBehaviour
 {
+	//调试代码
     [SerializeField]
     Vector3 debugMove = Vector3.zero;
-
+	//设置触发的对象
     [SerializeField]
-    QueryTriggerInteraction triggerInteraction;
+    QueryTriggerInteraction triggerInteraction;//对象的交互的枚举
     //似乎要去驱动状态机，也是说这个状态机是耦合的
 
     [SerializeField]
@@ -28,13 +29,13 @@ public class SuperCharacterController : MonoBehaviour
     bool clampToMovingGround;
     //我不明白下面三个选项
     [SerializeField]
-    bool debugSpheres;
+    bool debugSpheres;//在绘制可视化矩形
 
     [SerializeField]
-    bool debugGrounding;
+    bool debugGrounding;//绘制一系列地形的信息
 
     [SerializeField]
-    bool debugPushbackMesssages;
+    bool debugPushbackMesssages;//调试推出的时候的消息
 
     /// <summary>
     /// Describes the Transform of the object we are standing on as well as it's CollisionType, as well
@@ -61,7 +62,7 @@ public class SuperCharacterController : MonoBehaviour
             this.transform = hitTransform;
         }
     }
-    //体内三个碰撞体实体
+    //体内三个碰撞体实体，这个可以设置，实际的碰撞体，在实际操作的时候需要把自己的给忽略掉
     [SerializeField]
     CollisionSphere[] spheres =
         new CollisionSphere[3] {
@@ -71,7 +72,7 @@ public class SuperCharacterController : MonoBehaviour
         };
     //能走的部分
     public LayerMask Walkable;
-    //真正的实体，比如说趴下，或者蹲下，我都要改变超级角色控制器的实体
+    //真正的实体，比如说趴下，或者蹲下，我都要改变超级角色控制器的实体，角色真实的样子
     [SerializeField]
     Collider ownCollider;
     //实体的半径，三个实体组成的大小进行搞一搞
@@ -79,9 +80,9 @@ public class SuperCharacterController : MonoBehaviour
     public float radius = 0.5f;
 
     public float deltaTime { get; private set; }//每次更新的时间间隔
-    public SuperGround currentGround { get; private set; }
-    public CollisionSphere feet { get; private set; }
-    public CollisionSphere head { get; private set; }
+    public SuperGround currentGround { get; private set; }//当前所处的地面
+    public CollisionSphere feet { get; private set; }//脚部
+    public CollisionSphere head { get; private set; }//头部
 
     /// <summary>
     /// Total height of the controller from the bottom of the feet to the top of the head
@@ -89,35 +90,35 @@ public class SuperCharacterController : MonoBehaviour
     /// 控制器从底部到顶部的总高度
     public float height { get { return Vector3.Distance(SpherePosition(head), SpherePosition(feet)) + radius * 2; } }
 
-    public Vector3 up { get { return transform.up; } }
-    public Vector3 down { get { return -transform.up; } }
+    public Vector3 up { get { return transform.up; } }//朝向上
+    public Vector3 down { get { return -transform.up; } }//朝向下
 
-    public List<SuperCollision> collisionData { get; private set; }
-    public Transform currentlyClampedTo { get; set; }
-    public float heightScale { get; set; }
-    public float radiusScale { get; set; }
-    public bool manualUpdateOnly { get; set; }
+    public List<SuperCollision> collisionData { get; private set; }//获取到的碰撞体的信息
+    public Transform currentlyClampedTo { get; set; }//当前钳住的地面
+    public float heightScale { get; set; }//高度的缩放
+    public float radiusScale { get; set; }//半径的缩放
+    public bool manualUpdateOnly { get; set; }//手工update的开关
 
     public delegate void UpdateDelegate();
-    public event UpdateDelegate AfterSingleUpdate;
+    public event UpdateDelegate AfterSingleUpdate;//一个步骤完成的update
 
-    private Vector3 initialPosition;
-    private Vector3 groundOffset;
-    private Vector3 lastGroundPosition;
-    private bool clamping = true;
-    private bool slopeLimiting = true;
+    private Vector3 initialPosition;//初始化的位置
+    private Vector3 groundOffset;//地形的偏移
+    private Vector3 lastGroundPosition;//上一次地形的点
+    private bool clamping = true;//钳住地面是否
+    private bool slopeLimiting = true;//开启斜率检测
 
-    private List<Collider> ignoredColliders;
-    private List<IgnoredCollider> ignoredColliderStack;
+    private List<Collider> ignoredColliders;//忽略的碰撞体
+    private List<IgnoredCollider> ignoredColliderStack;//忽略的碰撞体的栈
 
     private const float Tolerance = 0.05f;//公差
     private const float TinyTolerance = 0.01f;//维差
     private const string TemporaryLayer = "TempCast";
     private const int MaxPushbackIterations = 2;//最大的阻尼
-    private int TemporaryLayerIndex;
+    private int TemporaryLayerIndex;//临时的层的东西
     private float fixedDeltaTime;
 
-    private static SuperCollisionType defaultCollisionType;
+    private static SuperCollisionType defaultCollisionType;//对碰撞体的描述描述
 
     void Awake()
     {
@@ -134,9 +135,11 @@ public class SuperCharacterController : MonoBehaviour
 
         heightScale = 1.0f;
 
-        if (ownCollider)
+        if (ownCollider)//把自己的碰撞体忽略
             IgnoreCollider(ownCollider);
 
+
+		//分别找到各个部分的碰撞体
         foreach (var sphere in spheres)
         {
             if (sphere.isFeet)
@@ -155,7 +158,7 @@ public class SuperCharacterController : MonoBehaviour
         if (defaultCollisionType == null)
             defaultCollisionType = new GameObject("DefaultSuperCollisionType", typeof(SuperCollisionType)).GetComponent<SuperCollisionType>();
 
-        currentGround = new SuperGround(Walkable, this, triggerInteraction);
+        currentGround = new SuperGround(Walkable, this, triggerInteraction);//拿到可以进行移动的信息？
 
         manualUpdateOnly = false;//同步的话需要看这个，如果是真实的同步又应该是什么样子呢
 
@@ -529,7 +532,11 @@ public class SuperCharacterController : MonoBehaviour
     {
         ignoredColliders.Clear();
     }
-    //地形的描述
+    /// <summary>
+    /// Super ground.
+    /// 这个是一个全新的类，对地形的描述？
+	/// 为什么要自己来创建这个，而不是分别绑定到相应的地方去
+	/// </summary>
     public class SuperGround
     {
         public SuperGround(LayerMask walkable, SuperCharacterController controller, QueryTriggerInteraction triggerInteraction)
@@ -553,7 +560,7 @@ public class SuperCharacterController : MonoBehaviour
             }
         }
 
-        private LayerMask walkable;
+        private LayerMask walkable;//可以行走的mask层
         private SuperCharacterController controller;
         private QueryTriggerInteraction triggerInteraction;
         

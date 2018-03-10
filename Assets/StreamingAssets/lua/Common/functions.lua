@@ -77,3 +77,15 @@ function trim(s)
 	assert(type(s)=="string")
 	return (string.gsub(s, "^%s*(.-)%s*$", "%1")) 
 end
+--获取number的int部分
+function getIntPart(x)
+	if x <= 0 then
+	   return math.ceil(x);
+	end
+	if math.ceil(x) == x then
+	   x = math.ceil(x);
+	else
+	   x = math.ceil(x) - 1;
+	end
+	return x;
+end

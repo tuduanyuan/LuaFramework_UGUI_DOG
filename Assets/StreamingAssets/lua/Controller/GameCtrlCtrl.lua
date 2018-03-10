@@ -15,6 +15,7 @@ local this = GameCtrlCtrl;
 local luabehaviour;
 local transform;
 local gameObject;
+--数据--(需要把数据进行整理成可以使用的东西)
 
 --构建函数--
 function GameCtrlCtrl.New()
@@ -73,6 +74,7 @@ function GameCtrlCtrl.FixedUpdate()
     
 end
 
+
 ------自定义函数------
 --函数式例--
 --function GameCtrlCtrl.fun(obj,...)
@@ -98,9 +100,16 @@ function GameCtrlCtrl.AddTouchPanel()
 	--Camera
 	GameCtrlPanel._Camera_TouchPanel = GameCtrlPanel._Camera:AddComponent(typeof(touchpanel));
 	touctrl = GameCtrlPanel._Camera_TouchPanel;
+	touctrl.beginHandler = touctrl.beginHandler + this.onCameraTouchBegin;
+	touctrl.dragHandler = touctrl.dragHandler + this.onCameraTouchDrag;
+	touctrl.endHandler = touctrl.endHandler + this.onCameraTouchEnd;
+
 	--Bt1
 	GameCtrlPanel._Bt1_TouchPanel = GameCtrlPanel._Bt1:AddComponent(typeof(touchpanel));
 	touctrl = GameCtrlPanel._Bt1_TouchPanel;
+	touctrl.beginHandler = touctrl.beginHandler + this.onBt1TouchBegin;
+	touctrl.dragHandler = touctrl.dragHandler + this.onBt1TouchDrag;
+	touctrl.endHandler = touctrl.endHandler + this.onBt1TouchEnd;
 end
 --我也不知道怎么写
 function GameCtrlCtrl.RemoveTouchPanel()
@@ -110,49 +119,77 @@ end
 --处理View 响应，可能需要单独写逻辑来处理这个
 function GameCtrlCtrl.onViewTouchBegin(...)
 	local pos = ...;
-	log("开始点击:" .. pos.x .. " " .. pos.y);
+	log("视角-开始点击:" .. pos.x .. " " .. pos.y);
 end
 
 function GameCtrlCtrl.onViewTouchDrag(...)
 	local pos = ...;
-	log("持续点击:" .. pos.x .. " " .. pos.y);
+	log("视角-持续点击:" .. pos.x .. " " .. pos.y);
 end
 
 function GameCtrlCtrl.onViewTouchEnd(...)
 	local pos = ...;
-	log("结束点击:" .. pos.x .. " " .. pos.y);
+	log("视角-结束点击:" .. pos.x .. " " .. pos.y);
 end
 --处理Move
 function GameCtrlCtrl.onMoveTouchBegin(...)
 	local pos = ...;
-	log("开始点击:" .. pos.x .. " " .. pos.y);
+	log("移动-点击:" .. pos.x .. " " .. pos.y);
 end
 
 function GameCtrlCtrl.onMoveTouchDrag(...)
 	local pos = ...;
-	log("持续点击:" .. pos.x .. " " .. pos.y);
+	log("移动-持续点击:" .. pos.x .. " " .. pos.y);
 end
 
 function GameCtrlCtrl.onMoveTouchEnd(...)
 	local pos = ...;
-	log("结束点击:" .. pos.x .. " " .. pos.y);
+	log("移动-结束点击:" .. pos.x .. " " .. pos.y);
 end
 
-function GameCtrlCtrl.OnCamera()
-	log("拖Camera的按钮，这个要想想怎么搞，也许要自己写");
+--处理Camera
+function GameCtrlCtrl.onCameraTouchBegin(...)
+	local pos = ...;
+	log("Camera-开始点击:" .. pos.x .. " " .. pos.y);
 end
 
-function GameCtrlCtrl.OnRocker()
-	log("OnRocker 这个是假象，反正我不实现内容");
+function GameCtrlCtrl.onCameraTouchDrag(...)
+	local pos = ...;
+	log("Camera-持续点击:" .. pos.x .. " " .. pos.y);
 end
+
+function GameCtrlCtrl.onCameraTouchEnd(...)
+	local pos = ...;
+	log("Camera-结束点击:" .. pos.x .. " " .. pos.y);
+end
+--处理bt1(攻击按钮)
+function GameCtrlCtrl.onBt1TouchBegin(...)
+	local pos = ...;
+	log("攻击-点击:" .. getIntPart(pos.x) .. " " .. getIntPart(pos.y));
+end
+
+function GameCtrlCtrl.onBt1TouchDrag(...)
+	local pos = ...;
+	
+	log("持续攻击-点击:" .. getIntPart(pos.x) .. " " .. getIntPart(pos.y));
+end
+
+function GameCtrlCtrl.onBt1TouchEnd(...)
+	local pos = ...;
+	log("攻击结束-点击:" .. pos.x .. " " .. pos.y);
+end
+
+-- function GameCtrlCtrl.OnRocker()
+-- 	log("OnRocker 这个是假象，反正我不实现内容");
+-- end
 
 function GameCtrlCtrl.OnBt0()
 	log("防御技能");
 end
 
-function GameCtrlCtrl.OnBt1()
-	log("攻击技能 也可以拖方向的说法");
-end
+-- function GameCtrlCtrl.OnBt1()
+-- 	log("攻击技能 也可以拖方向的说法");
+-- end
 
 function GameCtrlCtrl.OnBt2()
 	log("技能1");

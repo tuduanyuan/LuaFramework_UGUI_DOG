@@ -53,3 +53,6 @@ sysinfo.txt
 
 # local add 
 */.[Dd]S_Store
+*/Assets/LuaFramework/ToLua/Source/Generate/
+!*/Assets/LuaFramework/ToLua/Source/Generate/DelegateFactory.cs
+!*/Assets/LuaFramework/ToLua/Source/Generate/LuaBinder.cs

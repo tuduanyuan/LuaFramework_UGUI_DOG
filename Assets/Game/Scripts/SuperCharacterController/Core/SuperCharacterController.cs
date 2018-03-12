@@ -176,7 +176,7 @@ public class SuperCharacterController : MonoBehaviour
 
         if (!fixedTimeStep)
         {
-            //如果不是间隔执行
+            //上一帧的间隔
             deltaTime = Time.deltaTime;
             //执行单步
             SingleUpdate();
@@ -186,7 +186,7 @@ public class SuperCharacterController : MonoBehaviour
         {
             //如果是按照固定间隔执行
             float delta = Time.deltaTime;
-
+            //拿到当前帧的间隔
             while (delta > fixedDeltaTime)
             {
                 deltaTime = fixedDeltaTime;

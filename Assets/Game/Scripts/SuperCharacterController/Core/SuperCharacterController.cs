@@ -561,7 +561,7 @@ public class SuperCharacterController : MonoBehaviour
         }
 
         private LayerMask walkable;//可以行走的mask层
-        private SuperCharacterController controller;
+        private SuperCharacterController controller;//
         private QueryTriggerInteraction triggerInteraction;
         
         private GroundHit primaryGround;//主要的地面

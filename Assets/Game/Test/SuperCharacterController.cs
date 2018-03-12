@@ -32,7 +32,7 @@ namespace Test {
 
 
 
-
+                //test测试
                 DebugDraw.DrawMarker(contactPoint, 2.0f, Color.red, 0.0f, false);
 
                 Vector3 v = transform.position - contactPoint;

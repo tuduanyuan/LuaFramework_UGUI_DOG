@@ -4,45 +4,45 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace XGame {
     
+    //这个面片必须时刻保持
+    //先不管我画的对不对，我就只给2个坐标， 然后把这个坐标放置到世界坐标系里去，使用Drawmesh
 
     public class DrawSubLine : MonoBehaviour
     {
-        class Point
-        {
-            public Vector3 p;
-            public Point next;
-        }
-
 
 
         public float lineSize = 0.1f;//线的宽度
         public Shader shader;//线使用的shader
-       
-        public int lineUnitLength = 1;//线的单位长度
 
         public Vector2 size = new Vector2(100,100);//我整体的面板打大小
 
         private Mesh ml;
         private Material lmat;//线条的材质
 
-        private Vector3 s;
-        private Point first;
-        
+        public bool isDebug;
 
-        // Use this for initialization
-        void Start()
+        private void Awake()
         {
-   
             ml = new Mesh();
             lmat = new Material(shader);
             lmat.color = new Color(0, 0, 0, 1f);
-
-            AddLine(ml, MakeQuad(new Vector3(0, 0, 10), new Vector3(10,0,0), lineSize));
+        }
+        // Use this for initialization
+        void Start()
+        {
+            //初始化材质
+            var s = new Vector3(0, 0, 10);
+            var e = new Vector3(10, 0, 20);
+            AddLine(ml, MakeQuad(s, e, lineSize));
+            Debug.DrawLine(s, e);
             DrawMesh();
         }
         private void Update()
         {
             //DrawMesh();
+            var s = new Vector3(0, 0, 10);
+            var e = new Vector3(10, 0, 20);
+            //Debug.DrawLine(s, e,Color.red,1);
         }
         private void InitData()
         {
@@ -50,21 +50,17 @@ namespace XGame {
             var t_heigh = Mathf.RoundToInt(size.y);
             for (int i = 0; i<= t_width && t_width != 0; i++)
             {
-                var s = new Vector3(i * lineUnitLength, 0.1f, 0 * lineUnitLength); 
-                var e = new Vector3(i * lineUnitLength, 0.1f, t_heigh * lineUnitLength);
-                //logger.debug("s:" + s.ToString() + " e:" + e.ToString());
-                AddLine(ml, MakeQuad(s, e, lineSize));
-                DrawMesh();
+
                 //AddLine(ms, MakeQuad(s, e, lineSize));
             }
 
             for (int i = 0; i <= t_heigh && t_heigh != 0; i++)
             {
-                var s = new Vector3(0 * lineUnitLength, 0.1f, i * lineUnitLength);
-                var e = new Vector3(t_width * lineUnitLength, 0.1f, i * lineUnitLength);
+                //var s = new Vector3(0 * lineUnitLength, 0.1f, i * lineUnitLength);
+                //var e = new Vector3(t_width * lineUnitLength, 0.1f, i * lineUnitLength);
                 //logger.debug("s:" + s.ToString() + " e:" + e.ToString());
-                AddLine(ml, MakeQuad(s, e, lineSize));
-                DrawMesh();
+                //AddLine(ml, MakeQuad(s, e, lineSize));
+                //DrawMesh();
             }
         }
 
@@ -125,14 +121,16 @@ namespace XGame {
             logger.debug("s:" + s.ToString() + " e:" + e.ToString() + " w:" + w.ToString());
             w = w / 2.0f;
             Vector3[] q = new Vector3[4];
-            Vector3 n = Vector3.Cross(s, e);
-            Vector3 l = Vector3.Cross(n, e - s);
+
+            Vector3 c = Camera.main.transform.forward;
+            //Vector3 n = Vector3.Cross(c, e);
+            Vector3 l = Vector3.Cross(c, e - s);
             l.Normalize();
-            logger.debug("n:" + n.ToString() + " l:" + l.ToString());
-            q[0] = transform.InverseTransformPoint(s + l * w);
-            q[1] = transform.InverseTransformPoint(s + l * -w);
-            q[2] = transform.InverseTransformPoint(e + l * w);
-            q[3] = transform.InverseTransformPoint(e + l * -w);
+            logger.debug("c:" + c.ToString() + " l:" + l.ToString());
+            q[0] = s + l * w;
+            q[1] = s + l * -w;
+            q[2] = e + l * w;
+            q[3] = e + l * -w;
             var str = "";
             foreach(var i in q)
             {

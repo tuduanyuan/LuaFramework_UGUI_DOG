@@ -35,7 +35,7 @@ public class TerrainManager : MonoBehaviour
     /// </summary>
     public void SetTerrain()
     {
-        SetTerrain(100, 100, 100, 100, -10, 10);
+        SetTerrain(100, 100, 50  , 50, -10, 10);
     }
 
     /// <summary>
